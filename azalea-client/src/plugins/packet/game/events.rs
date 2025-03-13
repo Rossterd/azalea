@@ -7,8 +7,7 @@ use azalea_chat::FormattedText;
 use azalea_core::resource_location::ResourceLocation;
 use azalea_protocol::{
     packets::{
-        Packet,
-        game::{ClientboundGamePacket, ClientboundPlayerCombatKill, ServerboundGamePacket},
+        game::{ClientboundGamePacket, ClientboundPlayerCombatKill, ServerboundConfigurationAcknowledged, ServerboundGamePacket}, Packet
     },
     read::deserialize_packet,
 };
@@ -68,11 +67,16 @@ pub fn handle_outgoing_packets(
     for event in send_packet_events.read() {
         if let Ok((raw_connection, in_game_state)) = query.get_mut(event.sent_by) {
             if in_game_state.is_none() {
-                error!(
-                    "Tried to send a game packet {:?} while not in game state",
-                    event.packet
-                );
-                continue;
+                match event.packet {
+                    ServerboundGamePacket::ConfigurationAcknowledged(ServerboundConfigurationAcknowledged) => {println!("what is updog")},
+                    _ => {
+                        error!(
+                            "Tried to send a game packet {:?} while not in game state",
+                            event.packet
+                        );
+                        continue;                        
+                    },
+                }
             }
 
             // debug!("Sending packet: {:?}", event.packet);
